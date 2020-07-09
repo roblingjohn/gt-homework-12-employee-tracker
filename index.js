@@ -35,7 +35,7 @@ function askFunction(){
             name: "functionType"
         },
     ]).then (function(res){
-        switch(functionType) {
+        switch(res.functionType) {
             case "Add employee":
                 addEmployee();
                 break;
