@@ -1,6 +1,6 @@
-CREATE DATABASE epmloyee_trackerDB;
+CREATE DATABASE employee_trackerDB;
 
-USE epmloyee_trackerDB;
+USE employee_trackerDB;
 
 CREATE TABLE departments (
     id INTEGER AUTO_INCREMENT,
