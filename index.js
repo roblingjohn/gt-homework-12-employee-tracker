@@ -22,32 +22,47 @@ function askFunction(){
         {
             type: "list",
             message: "What would you like to do?",
-            choices: ["Add item", "View item", "Update item", "Exit"],
+            choices: [
+                        "Add employee",
+                        "Add role",
+                        "Add department",
+                        "View employees",
+                        "View roles",
+                        "View departments",
+                        "Update roles",
+                        "Exit"
+                        ],
             name: "functionType"
         },
     ]).then (function(res){
-        if (res.functionType === "Add item") {
-            inquirer.prompt([
-                {
-                    type: "list",
-                    message: "What would you like to add?",
-                    choices: ["Department", "Role", "Employee"],
-                    name: "addType"
-                }
-            ]).then(function(res){
-                if (res.addType === "Department"){
-                    addDepartment();
-                }
-                else if (res.addType === "Role"){
-                    addRole();
-                }
-                else if (res.addType === "Employee"){
-                    addEmployee();
-                }
-            })
-        }
-        else if (res.functionType === "Exit"){
-            exit()
+        switch(functionType) {
+            case "Add employee":
+                addEmployee();
+                break;
+            case "Add role":
+                addRole();
+                break;
+            case "Add department":
+                addDepartment();
+                break;
+            case "View employees":
+                viewEmployees();
+                break;
+            case "View roles":
+                viewRoles();
+                break;
+            case "View departments":
+                viewDepartments();
+                break;
+            case "Update roles":
+                updateRoles();
+                break;
+            case "Exit":
+                exit();
+                break;
+            default:
+                console.log("You should not see this.")
+            
         }
     })
 }
@@ -62,7 +77,7 @@ function addDepartment(){
     ]).then(function(res){
         connection.query(`INSERT INTO departments (name) VALUES ("${res.newDepartment}");`, function(err, results) {
             if (err) throw err;
-        console.log("Department added.")
+        console.log(`Department added: ${res.newDepartment}`)
         askFunction();
         })
     })
