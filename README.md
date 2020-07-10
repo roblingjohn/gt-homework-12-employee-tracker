@@ -17,7 +17,8 @@ This command line application allows the user to view, add, and delete informati
 2. run "npm install" to install dependencies
 3. copy the text from schema.sql and paste it into MySQL
 4. if you would like seed data, copy the text from seeds.sql and run it on MySQL
-5. run "node index.js" to start the app
+5. insert your MySQL password into the connection object on index.js
+6. run "node index.js" to start the app
 
 
 ## Usage
