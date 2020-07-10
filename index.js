@@ -78,14 +78,15 @@ function askFunction(){
             case "Delete role":
                 deleteRole();
                 break;
-            case "Delete departments":
+            case "Delete department":
                 deleteDepartment();
                 break;
             case "Exit":
                 exit();
                 break;
             default:
-                console.log("You should not see this.")
+                console.log("You should not see this.");
+                askFunction();
             
         }
     })
@@ -335,6 +336,40 @@ function deleteRole(){
             connection.query("DELETE FROM roles WHERE id = ?", [roleToDelete[0].id], function(err, results) {
                 if (err) throw err;
             console.log(`${roleToDelete.title} has been deleted.`);
+            askFunction();
+            })
+        }
+    })
+})
+}
+
+function deleteDepartment(){
+    console.log("WARNING: You have selected to delete an entire department. Please be extremely certain of your actions before you continue.")
+    connection.query("SELECT * FROM departments", (err, data) => {
+        departmentsArray = data.map((object) => object.department);
+        departmentsArray.unshift("CANCEL");
+        inquirer.prompt([
+            {
+                type: "list",
+                message: "Select department to DELETE:",
+                choices: departmentsArray,
+                name: "deptToDelete"
+            },
+            {
+                type: "confirm",
+                message: "CONFIRM DELETION:",
+                name: "confirm"
+            },
+        ]).then(function(res){
+            if(res.confirm === false || res.deptToDelete === "CANCEL"){
+                console.log("Deletion cancelled.")
+                askFunction();
+            }
+            else {
+            const deptToDelete = data.filter(object => object.department === res.deptToDelete);
+            connection.query("DELETE FROM departments WHERE id = ?", [deptToDelete[0].id], function(err, results) {
+                if (err) throw err;
+            console.log(`Department has been deleted.`);
             askFunction();
             })
         }
