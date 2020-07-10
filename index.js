@@ -328,10 +328,13 @@ function deleteRole(){
             }
             else {
             const roleToDelete = data.filter(object => object.title === res.roleToDelete);
-            connection.query("DELETE FROM roles WHERE id = ?", [roleToDelete[0].id], function(err, results) {
+            connection.query("DELETE FROM employees WHERE role_id = ?;", [roleToDelete[0].id], function(err, results) {
                 if (err) throw err;
-            console.log("Role deleted.");
-            askFunction();
+                connection.query("DELETE FROM roles WHERE id = ?;", [roleToDelete[0].id], function(err, results) {
+                    if (err) throw err;
+                console.log(`Role has been deleted.`);
+                askFunction();
+                })
             })
         }
     })
@@ -362,10 +365,16 @@ function deleteDepartment(){
             }
             else {
             const deptToDelete = data.filter(object => object.department === res.deptToDelete);
-            connection.query("DELETE FROM departments WHERE id = ?", [deptToDelete[0].id], function(err, results) {
+            connection.query("DELETE FROM employees WHERE department_id = ?;", [deptToDelete[0].id], function(err, results) {
                 if (err) throw err;
-            console.log(`Department has been deleted.`);
-            askFunction();
+                connection.query("DELETE FROM roles WHERE department_id = ?;", [deptToDelete[0].id], function(err, results) {
+                    if (err) throw err;
+                    connection.query("DELETE FROM departments WHERE id = ?;", [deptToDelete[0].id], function(err, results) {
+                        if (err) throw err;
+                    console.log(`Department has been deleted.`);
+                    askFunction();
+                    })
+                })
             })
         }
     })
