@@ -39,6 +39,9 @@ function askFunction(){
                         "Add department",
                         "Update role",
                         "Update manager",
+                        "Delete employee",
+                        "Delete role",
+                        "Delete department",
                         "Exit"
                         ],
             name: "functionType"
@@ -68,6 +71,15 @@ function askFunction(){
                 break;
             case "Update manager":
                 updateManager();
+                break;
+            case "Delete employee":
+                deleteEmployee();
+                break;
+            case "Delete role":
+                deleteRole();
+                break;
+            case "Delete departments":
+                deleteDepartment();
                 break;
             case "Exit":
                 exit();
@@ -261,6 +273,39 @@ function updateManager(){
         })
     })
 }
+
+function deleteEmployee(){
+    connection.query("SELECT * FROM employees", (err, data) => {
+        employeeArray = data.map((object) => `${object.first_name} ${object.last_name}`);
+        inquirer.prompt([
+            {
+                type: "list",
+                message: "Select employee to DELETE:",
+                choices: employeeArray,
+                name: "employeeToDelete"
+            },
+            {
+                type: "confirm",
+                message: "CONFIRM DELETION:",
+                choices: employeeArray,
+                name: "confirm"
+            },
+        ]).then(function(res){
+            if(res.confirm === false){
+                console.log("Deletion cancelled.")
+            }
+            else {
+            const employeeToDelete = data.filter(object => `${object.first_name} ${object.last_name}` === res.employeeToDelete);
+            connection.query("DELETE FROM employees WHERE id = ?", [employeeToDelete[0].id], function(err, results) {
+                if (err) throw err;
+            console.log(`${employeeToDelete[0].first_name} ${employeeToDelete[0].last_name} has been deleted.`)
+            })
+        }
+        askFunction();
+    })
+})
+}
+
 
 function exit(){
     console.log("-------------------------------------------")
