@@ -1,6 +1,8 @@
 var mysql = require("mysql");
 var inquirer = require("inquirer");
 
+let departmentsArray = [];
+
 var connection = mysql.createConnection({
   host: "localhost",
 
@@ -13,8 +15,8 @@ var connection = mysql.createConnection({
 });
 
 connection.connect(function(err) {
-  if (err) throw err;
-  askFunction();
+    if (err) throw err;
+    askFunction();
 });
 
 function askFunction(){
@@ -72,10 +74,10 @@ function addDepartment(){
         {
             type: "input",
             message: "Please enter the name of the department you would like to enter:",
-            name: "newRole"
+            name: "newDepartment"
         }
     ]).then(function(res){
-        connection.query(`INSERT INTO departments (name) VALUES ("${res.newDepartment}");`, function(err, results) {
+        connection.query("INSERT INTO departments (name) VALUES (?)", [res.newDepartment], function(err, results) {
             if (err) throw err;
         console.log(`Department added: ${res.newDepartment}`)
         askFunction();
@@ -84,6 +86,9 @@ function addDepartment(){
 }
 
 function addRole(){
+    connection.query("SELECT * FROM departments", (err, data) => {
+        departmentsArray = data.map((object) => object.name)
+    console.log(departmentsArray)
     inquirer.prompt([
         {
             type: "input",
@@ -97,17 +102,20 @@ function addRole(){
         },
         {
             type: "list",
-            message: "Please choose the department to which this employee belongs:",
-            choices: [0],
+            message: "Please choose the department to which this role belongs:",
+            choices: departmentsArray,
             name: "newRoleDept"
         }
     ]).then(function(res){
-        connection.query(`INSERT INTO roles (title, salary, department_id) VALUES ("${res.newRoleName}", "${res.newRoleSalary}", "${res.newRoleDept}");`, function(err, results) {
+        const deptObject = data.filter(object => object.name === res.newRoleDept);
+        console.log(deptObject)
+        connection.query(`INSERT INTO roles (title, salary, department_id) VALUES ("${res.newRoleName}", "${res.newRoleSalary}", "${deptObject[0].id}");`, function(err, results) {
             if (err) throw err;
-        console.log("Role added")
+        console.log(`Role added: ${res}`)
         askFunction();
         })
     })
+})
 }
 
 function addEmployee(){
@@ -120,7 +128,7 @@ function addEmployee(){
     ]).then(function(res){
         connection.query(`INSERT INTO roles (name) VALUES ("${res.newEmployeeName}");`, function(err, results) {
             if (err) throw err;
-        console.log("Employee added.")
+            console.log("Employee added.")
         askFunction();
         })
     })
