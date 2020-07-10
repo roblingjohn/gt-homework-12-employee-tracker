@@ -145,7 +145,6 @@ function addEmployee(){
 function addRole(){
     connection.query("SELECT * FROM departments", (err, data) => {
         departmentsArray = data.map((object) => object.department)
-    console.log(departmentsArray)
     inquirer.prompt([
         {
             type: "input",
@@ -165,10 +164,9 @@ function addRole(){
         }
     ]).then(function(res){
         const deptObject = data.filter(object => object.department === res.newRoleDept);
-        console.log(deptObject)
         connection.query("INSERT INTO roles (title, salary, department_id) VALUES (?, ?, ?)", [res.newRoleName, res.newRoleSalary, deptObject[0].id], function(err, results) {
             if (err) throw err;
-        console.log(`Role added: ${res}`)
+        console.log("Role added.")
         askFunction();
         })
     })
@@ -185,7 +183,7 @@ function addDepartment(){
     ]).then(function(res){
         connection.query("INSERT INTO departments (department) VALUES (?)", [res.newDepartment], function(err, results) {
             if (err) throw err;
-        console.log(`Department added: ${res.newDepartment}`)
+        console.log("Department added.")
         askFunction();
         })
     })
@@ -234,11 +232,9 @@ function updateRoles(){
             ]).then(function(res){
                 const userUpdateObject = data.filter(object => `${object.first_name} ${object.last_name}` === res.employeeToChangeRole);
                 const newRole = rolesData.filter(object => object.title === res.newRole);
-                console.log(rolesData)
-                // console.log(res.newRole)
                 connection.query("UPDATE employees SET role_id = ? WHERE first_name=? AND last_name=?", [newRole[0].id, userUpdateObject[0].first_name, userUpdateObject[0].last_name], function(err, results) {
                     if (err) throw err;
-                console.log(`Department added: ${res.newDepartment}`)
+                console.log("Department added.")
                 askFunction();
             })
         })
@@ -265,10 +261,9 @@ function updateManager(){
             ]).then(function(res){
                 const userUpdateManager = data.filter(object => `${object.first_name} ${object.last_name}` === res.employeeToChangeManager);
                 const newManager = data.filter(object => `${object.first_name} ${object.last_name}` === res.newManager);
-                // console.log(res.newRole)
                 connection.query("UPDATE employees SET manager_id = ? WHERE first_name=? AND last_name=?", [newManager[0].id, userUpdateManager[0].first_name, userUpdateManager[0].last_name], function(err, results) {
                     if (err) throw err;
-                console.log(`Department added: ${res.newDepartment}`)
+                console.log("Department added.")
                 askFunction();
             })
         })
@@ -301,7 +296,7 @@ function deleteEmployee(){
             const employeeToDelete = data.filter(object => `${object.first_name} ${object.last_name}` === res.employeeToDelete);
             connection.query("DELETE FROM employees WHERE id = ?", [employeeToDelete[0].id], function(err, results) {
                 if (err) throw err;
-            console.log(`${employeeToDelete[0].first_name} ${employeeToDelete[0].last_name} has been deleted.`)
+            console.log("Employee deleted.")
             })
             askFunction();
         }
@@ -333,10 +328,13 @@ function deleteRole(){
             }
             else {
             const roleToDelete = data.filter(object => object.title === res.roleToDelete);
-            connection.query("DELETE FROM roles WHERE id = ?", [roleToDelete[0].id], function(err, results) {
+            connection.query("DELETE FROM employees WHERE role_id = ?;", [roleToDelete[0].id], function(err, results) {
                 if (err) throw err;
-            console.log(`${roleToDelete.title} has been deleted.`);
-            askFunction();
+                connection.query("DELETE FROM roles WHERE id = ?;", [roleToDelete[0].id], function(err, results) {
+                    if (err) throw err;
+                console.log(`Role has been deleted.`);
+                askFunction();
+                })
             })
         }
     })
@@ -367,10 +365,16 @@ function deleteDepartment(){
             }
             else {
             const deptToDelete = data.filter(object => object.department === res.deptToDelete);
-            connection.query("DELETE FROM departments WHERE id = ?", [deptToDelete[0].id], function(err, results) {
+            connection.query("DELETE FROM employees WHERE department_id = ?;", [deptToDelete[0].id], function(err, results) {
                 if (err) throw err;
-            console.log(`Department has been deleted.`);
-            askFunction();
+                connection.query("DELETE FROM roles WHERE department_id = ?;", [deptToDelete[0].id], function(err, results) {
+                    if (err) throw err;
+                    connection.query("DELETE FROM departments WHERE id = ?;", [deptToDelete[0].id], function(err, results) {
+                        if (err) throw err;
+                    console.log(`Department has been deleted.`);
+                    askFunction();
+                    })
+                })
             })
         }
     })
