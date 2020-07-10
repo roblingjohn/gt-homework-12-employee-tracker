@@ -1,3 +1,4 @@
+DROP DATABASE IF EXISTS employee_trackerDB;
 CREATE DATABASE employee_trackerDB;
 
 USE employee_trackerDB;
@@ -13,7 +14,8 @@ CREATE TABLE roles (
     title VARCHAR(30) NOT NULL,
     salary DECIMAL(10, 2),
     department_id INTEGER,
-    PRIMARY KEY (id)
+    PRIMARY KEY (id),
+    FOREIGN KEY (department_id) REFERENCES (departments.id)
 
 );
 
@@ -22,6 +24,11 @@ CREATE TABLE employees (
     first_name VARCHAR(30) NOT NULL,
     last_name VARCHAR(30) NOT NULL,
     role_id INTEGER NOT NULL,
+    department_id INTEGER,
     manager_id INTEGER,
-    PRIMARY KEY (id)
+    PRIMARY KEY (id),
+    FOREIGN KEY (role_id) REFERENCES (roles.id),
+    FOREIGN KEY (department_id) REFERENCES (departments.id)
 );
+
+SELECT * FROM employees;
