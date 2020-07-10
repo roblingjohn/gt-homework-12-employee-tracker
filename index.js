@@ -19,6 +19,9 @@ var connection = mysql.createConnection({
 
 connection.connect(function(err) {
     if (err) throw err;
+    console.log("-------------------------------------------")
+    console.log("| Welcome to the Employee Tracker System! |")
+    console.log("-------------------------------------------")
     askFunction();
 });
 
@@ -73,35 +76,52 @@ function askFunction(){
 }
 
 function addEmployee(){
+    connection.query("SELECT * FROM employees", (err, data) => {
+        employeeArray = data.map((object) => `${object.first_name} ${object.last_name}`);
+        employeeArray.unshift("None");
+        const employeeData = data;
     connection.query("SELECT * FROM roles", (err, data) => {
         rolesArray = data.map((object) => object.title)
-    console.log(rolesArray)
     inquirer.prompt([
         {
             type: "input",
-            message: "Please enter the first name of the employee you would like to enter:",
+            message: "Please enter the employee FIRST NAME:",
             name: "firstName"
         },
         {
             type: "input",
-            message: "Please enter the last name of the employee you would like to enter:",
+            message: "Please enter the employee LAST NAME:",
             name: "lastName"
         },
         {
             type: "list",
-            message: "Please choose the role to which this employee belongs:",
+            message: "Please choose the employee ROLE:",
             choices: rolesArray,
             name: "newEmployeeRole"
+        },
+        {
+            type: "list",
+            message: "Please assign the employee's MANAGER, if any:",
+            choices: employeeArray,
+            name: "manager"
         }
     ]).then(function(res){
         const roleObject = data.filter(object => object.title === res.newEmployeeRole);
-        console.log(roleObject)
-        connection.query("INSERT INTO employees (first_name, last_name, role_id, department_id, manager_id) VALUES (?, ?, ?, ?, ?)", [res.firstName, res.lastName, roleObject[0].id, roleObject[0].department_id, 0], function(err, results) {
+        const managerObject = employeeData.filter(object => `${object.first_name} ${object.last_name}` === res.manager);
+        let managerID;
+        if(res.manager === "None"){
+            managerID = 0
+        }
+        else{
+            managerID = managerObject[0].id;
+        }
+        connection.query("INSERT INTO employees (first_name, last_name, role_id, department_id, manager_id) VALUES (?, ?, ?, ?, ?)", [res.firstName, res.lastName, roleObject[0].id, roleObject[0].department_id, managerID], function(err, results) {
             if (err) throw err;
             console.log("Employee added.")
         askFunction();
         })
     })
+})
 })
 }
 
@@ -211,6 +231,9 @@ function updateRoles(){
 }
 
 function exit(){
+    console.log("-------------------------------------------")
+    console.log("|                Goodbye!                 |")
+    console.log("-------------------------------------------")
     connection.end();
 }
 
