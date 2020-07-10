@@ -154,21 +154,21 @@ function addDepartment(){
 }
 
 function viewEmployees(){
-    connection.query("SELECT employees.id, first_name, last_name, title, departments.department, salary, manager_id FROM employees INNER JOIN roles on (role_id = roles.id) INNER JOIN departments on (roles.department_id = departments.id);", (err, data) => {
+    connection.query("SELECT employees.id, first_name, last_name, title, departments.department, salary, manager_id FROM employees INNER JOIN roles on (role_id = roles.id) INNER JOIN departments on (roles.department_id = departments.id) ORDER BY employees.id;", (err, data) => {
         console.table(data)
     askFunction();
     })
 }
 
 function viewRoles(){
-    connection.query("SELECT roles.id, title, salary, departments.department FROM roles INNER JOIN departments on (department_id = departments.id);", (err, data) => {
+    connection.query("SELECT roles.id, title, salary, departments.department FROM roles INNER JOIN departments on (department_id = departments.id) ORDER BY roles.id;", (err, data) => {
         console.table(data)
     askFunction();
     })
 }
 
 function viewDepartments(){
-    connection.query("SELECT * FROM departments", (err, data) => {
+    connection.query("SELECT * FROM departments ORDER BY departments.id", (err, data) => {
         console.table(data)
         askFunction();
     })
