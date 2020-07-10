@@ -37,7 +37,8 @@ function askFunction(){
                         "Add employee",
                         "Add role",
                         "Add department",
-                        "Update roles",
+                        "Update role",
+                        "Update manager",
                         "Exit"
                         ],
             name: "functionType"
@@ -62,8 +63,11 @@ function askFunction(){
             case "View departments":
                 viewDepartments();
                 break;
-            case "Update roles":
+            case "Update role":
                 updateRoles();
+                break;
+            case "Update manager":
+                updateManager();
                 break;
             case "Exit":
                 exit();
@@ -223,11 +227,39 @@ function updateRoles(){
                     if (err) throw err;
                 console.log(`Department added: ${res.newDepartment}`)
                 askFunction();
-                askFunction();
             })
         })
     })
 })
+}
+
+function updateManager(){
+        connection.query("SELECT * FROM employees", (err, data) => {
+            employeeArray = data.map((object) => `${object.first_name} ${object.last_name}`);
+            inquirer.prompt([
+                {
+                    type: "list",
+                    message: "Which employee would you like to give a new manager?",
+                    choices: employeeArray,
+                    name: "employeeToChangeManager"
+                },
+                {
+                    type: "list",
+                    message: "Who would you like the new manager to be?",
+                    choices: employeeArray,
+                    name: "newManager"
+                },
+            ]).then(function(res){
+                const userUpdateManager = data.filter(object => `${object.first_name} ${object.last_name}` === res.employeeToChangeManager);
+                const newManager = data.filter(object => `${object.first_name} ${object.last_name}` === res.newManager);
+                // console.log(res.newRole)
+                connection.query("UPDATE employees SET manager_id = ? WHERE first_name=? AND last_name=?", [newManager[0].id, userUpdateManager[0].first_name, userUpdateManager[0].last_name], function(err, results) {
+                    if (err) throw err;
+                console.log(`Department added: ${res.newDepartment}`)
+                askFunction();
+            })
+        })
+    })
 }
 
 function exit(){
