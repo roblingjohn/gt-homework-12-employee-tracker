@@ -192,7 +192,7 @@ function addDepartment(){
 }
 
 function viewEmployees(){
-    connection.query("SELECT employees.id, first_name, last_name, title, departments.department, salary, manager_id FROM employees INNER JOIN roles on (role_id = roles.id) INNER JOIN departments on (roles.department_id = departments.id) ORDER BY employees.id;", (err, data) => {
+    connection.query("SELECT employees.id, employees.first_name, employees.last_name, title, departments.department, salary, CONCAT(m.first_name, ' ', m.last_name) AS Manager FROM employees INNER JOIN roles on (role_id = roles.id) INNER JOIN departments on (roles.department_id = departments.id) LEFT JOIN employees m ON m.id = employees.manager_id;", (err, data) => {
         console.table(data)
     askFunction();
     })
