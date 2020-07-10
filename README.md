@@ -21,9 +21,15 @@ This command line application allows the user to view, add, and delete informati
 
 
 ## Usage
+[Video of app in action](https://drive.google.com/file/d/15fFy1z4p-6KPYhsukTxR-xqdoH3j_DTQ/view)
+
 ![Screenshot 1](/assets/images/screenshot1.png)
 ![Screenshot 2](/assets/images/screenshot2.png)
 ![Screenshot 3](/assets/images/screenshot3.png)
+![Screenshot 4](/assets/images/screenshot4.png)
+![Screenshot 5](/assets/images/screenshot5.png)
+![Screenshot 6](/assets/images/screenshot6.png)
+![Screenshot 7](/assets/images/screenshot7.png)
 
 Once you start the app, you will be given choices of what to do. Use the arrow keys to navigate the menus and press enter to select. When prompted, type the information to enter and press enter. To close the app, chose "Exit" from the main menu.
 
