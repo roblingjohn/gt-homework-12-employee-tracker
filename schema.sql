@@ -5,7 +5,7 @@ USE employee_trackerDB;
 
 CREATE TABLE departments (
     id INTEGER AUTO_INCREMENT,
-    name VARCHAR(30) NOT NULL,
+    department VARCHAR(30) NOT NULL,
     PRIMARY KEY (id)
 );
 
@@ -30,5 +30,3 @@ CREATE TABLE employees (
     FOREIGN KEY (role_id) REFERENCES roles(id),
     FOREIGN KEY (department_id) REFERENCES departments(id)
 );
-
-SELECT * FROM employees;

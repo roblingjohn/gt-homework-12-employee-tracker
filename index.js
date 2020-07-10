@@ -19,6 +19,9 @@ var connection = mysql.createConnection({
 
 connection.connect(function(err) {
     if (err) throw err;
+    console.log("-------------------------------------------")
+    console.log("| Welcome to the Employee Tracker System! |")
+    console.log("-------------------------------------------")
     askFunction();
 });
 
@@ -34,7 +37,11 @@ function askFunction(){
                         "Add employee",
                         "Add role",
                         "Add department",
-                        "Update roles",
+                        "Update role",
+                        "Update manager",
+                        "Delete employee",
+                        "Delete role",
+                        "Delete department",
                         "Exit"
                         ],
             name: "functionType"
@@ -59,49 +66,79 @@ function askFunction(){
             case "View departments":
                 viewDepartments();
                 break;
-            case "Update roles":
+            case "Update role":
                 updateRoles();
+                break;
+            case "Update manager":
+                updateManager();
+                break;
+            case "Delete employee":
+                deleteEmployee();
+                break;
+            case "Delete role":
+                deleteRole();
+                break;
+            case "Delete department":
+                deleteDepartment();
                 break;
             case "Exit":
                 exit();
                 break;
             default:
-                console.log("You should not see this.")
+                console.log("You should not see this.");
+                askFunction();
             
         }
     })
 }
 
 function addEmployee(){
+    connection.query("SELECT * FROM employees", (err, data) => {
+        employeeArray = data.map((object) => `${object.first_name} ${object.last_name}`);
+        employeeArray.unshift("None");
+        const employeeData = data;
     connection.query("SELECT * FROM roles", (err, data) => {
         rolesArray = data.map((object) => object.title)
-    console.log(rolesArray)
     inquirer.prompt([
         {
             type: "input",
-            message: "Please enter the first name of the employee you would like to enter:",
+            message: "Please enter the employee FIRST NAME:",
             name: "firstName"
         },
         {
             type: "input",
-            message: "Please enter the last name of the employee you would like to enter:",
+            message: "Please enter the employee LAST NAME:",
             name: "lastName"
         },
         {
             type: "list",
-            message: "Please choose the role to which this employee belongs:",
+            message: "Please choose the employee ROLE:",
             choices: rolesArray,
             name: "newEmployeeRole"
+        },
+        {
+            type: "list",
+            message: "Please assign the employee's MANAGER, if any:",
+            choices: employeeArray,
+            name: "manager"
         }
     ]).then(function(res){
         const roleObject = data.filter(object => object.title === res.newEmployeeRole);
-        console.log(roleObject)
-        connection.query("INSERT INTO employees (first_name, last_name, role_id, department_id, manager_id) VALUES (?, ?, ?, ?, ?)", [res.firstName, res.lastName, roleObject[0].id, roleObject[0].department_id, 0], function(err, results) {
+        const managerObject = employeeData.filter(object => `${object.first_name} ${object.last_name}` === res.manager);
+        let managerID;
+        if(res.manager === "None"){
+            managerID = 0
+        }
+        else{
+            managerID = managerObject[0].id;
+        }
+        connection.query("INSERT INTO employees (first_name, last_name, role_id, department_id, manager_id) VALUES (?, ?, ?, ?, ?)", [res.firstName, res.lastName, roleObject[0].id, roleObject[0].department_id, managerID], function(err, results) {
             if (err) throw err;
             console.log("Employee added.")
         askFunction();
         })
     })
+})
 })
 }
 
@@ -203,14 +240,148 @@ function updateRoles(){
                     if (err) throw err;
                 console.log(`Department added: ${res.newDepartment}`)
                 askFunction();
-                askFunction();
             })
         })
     })
 })
 }
 
+function updateManager(){
+        connection.query("SELECT * FROM employees", (err, data) => {
+            employeeArray = data.map((object) => `${object.first_name} ${object.last_name}`);
+            inquirer.prompt([
+                {
+                    type: "list",
+                    message: "Which employee would you like to give a new manager?",
+                    choices: employeeArray,
+                    name: "employeeToChangeManager"
+                },
+                {
+                    type: "list",
+                    message: "Who would you like the new manager to be?",
+                    choices: employeeArray,
+                    name: "newManager"
+                },
+            ]).then(function(res){
+                const userUpdateManager = data.filter(object => `${object.first_name} ${object.last_name}` === res.employeeToChangeManager);
+                const newManager = data.filter(object => `${object.first_name} ${object.last_name}` === res.newManager);
+                // console.log(res.newRole)
+                connection.query("UPDATE employees SET manager_id = ? WHERE first_name=? AND last_name=?", [newManager[0].id, userUpdateManager[0].first_name, userUpdateManager[0].last_name], function(err, results) {
+                    if (err) throw err;
+                console.log(`Department added: ${res.newDepartment}`)
+                askFunction();
+            })
+        })
+    })
+}
+
+function deleteEmployee(){
+    console.log("WARNING: You have selected to delete an employee. Please be certain of your actions before you continue.")
+    connection.query("SELECT * FROM employees", (err, data) => {
+        employeeArray = data.map((object) => `${object.first_name} ${object.last_name}`);
+        employeeArray.unshift("CANCEL");
+        inquirer.prompt([
+            {
+                type: "list",
+                message: "Select employee to DELETE:",
+                choices: employeeArray,
+                name: "employeeToDelete"
+            },
+            {
+                type: "confirm",
+                message: "CONFIRM DELETION:",
+                name: "confirm"
+            },
+        ]).then(function(res){
+            if(res.confirm === false || res.employeeToDelete === "CANCEL"){
+                console.log("Deletion cancelled.")
+                askFunction();
+            }
+            else {
+            const employeeToDelete = data.filter(object => `${object.first_name} ${object.last_name}` === res.employeeToDelete);
+            connection.query("DELETE FROM employees WHERE id = ?", [employeeToDelete[0].id], function(err, results) {
+                if (err) throw err;
+            console.log(`${employeeToDelete[0].first_name} ${employeeToDelete[0].last_name} has been deleted.`)
+            })
+            askFunction();
+        }
+    })
+})
+}
+
+function deleteRole(){
+    console.log("WARNING: You have selected to delete a role. Please be certain of your actions before you continue.")
+    connection.query("SELECT * FROM roles", (err, data) => {
+        rolesArray = data.map((object) => object.title);
+        rolesArray.unshift("CANCEL");
+        inquirer.prompt([
+            {
+                type: "list",
+                message: "Select role to DELETE:",
+                choices: rolesArray,
+                name: "roleToDelete"
+            },
+            {
+                type: "confirm",
+                message: "CONFIRM DELETION:",
+                name: "confirm"
+            },
+        ]).then(function(res){
+            if(res.confirm === false || res.roleToDelete === "CANCEL"){
+                console.log("Deletion cancelled.")
+                askFunction();
+            }
+            else {
+            const roleToDelete = data.filter(object => object.title === res.roleToDelete);
+            connection.query("DELETE FROM roles WHERE id = ?", [roleToDelete[0].id], function(err, results) {
+                if (err) throw err;
+            console.log(`${roleToDelete.title} has been deleted.`);
+            askFunction();
+            })
+        }
+    })
+})
+}
+
+function deleteDepartment(){
+    console.log("WARNING: You have selected to delete an entire department. Please be extremely certain of your actions before you continue.")
+    connection.query("SELECT * FROM departments", (err, data) => {
+        departmentsArray = data.map((object) => object.department);
+        departmentsArray.unshift("CANCEL");
+        inquirer.prompt([
+            {
+                type: "list",
+                message: "Select department to DELETE:",
+                choices: departmentsArray,
+                name: "deptToDelete"
+            },
+            {
+                type: "confirm",
+                message: "CONFIRM DELETION:",
+                name: "confirm"
+            },
+        ]).then(function(res){
+            if(res.confirm === false || res.deptToDelete === "CANCEL"){
+                console.log("Deletion cancelled.")
+                askFunction();
+            }
+            else {
+            const deptToDelete = data.filter(object => object.department === res.deptToDelete);
+            connection.query("DELETE FROM departments WHERE id = ?", [deptToDelete[0].id], function(err, results) {
+                if (err) throw err;
+            console.log(`Department has been deleted.`);
+            askFunction();
+            })
+        }
+    })
+})
+}
+
+
 function exit(){
+    console.log("-------------------------------------------")
+    console.log("|                Goodbye!                 |")
+    console.log("-------------------------------------------")
     connection.end();
 }
 
