@@ -275,8 +275,10 @@ function updateManager(){
 }
 
 function deleteEmployee(){
+    console.log("WARNING: You have selected to delete an employee. Please be certain of your actions before you continue.")
     connection.query("SELECT * FROM employees", (err, data) => {
         employeeArray = data.map((object) => `${object.first_name} ${object.last_name}`);
+        employeeArray.unshift("CANCEL");
         inquirer.prompt([
             {
                 type: "list",
@@ -287,12 +289,12 @@ function deleteEmployee(){
             {
                 type: "confirm",
                 message: "CONFIRM DELETION:",
-                choices: employeeArray,
                 name: "confirm"
             },
         ]).then(function(res){
-            if(res.confirm === false){
+            if(res.confirm === false || res.employeeToDelete === "CANCEL"){
                 console.log("Deletion cancelled.")
+                askFunction();
             }
             else {
             const employeeToDelete = data.filter(object => `${object.first_name} ${object.last_name}` === res.employeeToDelete);
@@ -300,8 +302,42 @@ function deleteEmployee(){
                 if (err) throw err;
             console.log(`${employeeToDelete[0].first_name} ${employeeToDelete[0].last_name} has been deleted.`)
             })
+            askFunction();
         }
-        askFunction();
+    })
+})
+}
+
+function deleteRole(){
+    console.log("WARNING: You have selected to delete a role. Please be certain of your actions before you continue.")
+    connection.query("SELECT * FROM roles", (err, data) => {
+        rolesArray = data.map((object) => object.title);
+        rolesArray.unshift("CANCEL");
+        inquirer.prompt([
+            {
+                type: "list",
+                message: "Select role to DELETE:",
+                choices: rolesArray,
+                name: "roleToDelete"
+            },
+            {
+                type: "confirm",
+                message: "CONFIRM DELETION:",
+                name: "confirm"
+            },
+        ]).then(function(res){
+            if(res.confirm === false || res.roleToDelete === "CANCEL"){
+                console.log("Deletion cancelled.")
+                askFunction();
+            }
+            else {
+            const roleToDelete = data.filter(object => object.title === res.roleToDelete);
+            connection.query("DELETE FROM roles WHERE id = ?", [roleToDelete[0].id], function(err, results) {
+                if (err) throw err;
+            console.log(`${roleToDelete.title} has been deleted.`);
+            askFunction();
+            })
+        }
     })
 })
 }
