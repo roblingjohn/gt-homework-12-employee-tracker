@@ -3,7 +3,8 @@ const inquirer = require("inquirer");
 const cTable = require('console.table');
 
 let departmentsArray = [];
-let rolesArray = []
+let rolesArray = [];
+let employeeArray = []
 
 var connection = mysql.createConnection({
   host: "localhost",
@@ -27,12 +28,12 @@ function askFunction(){
             type: "list",
             message: "What would you like to do?",
             choices: [
-                        "Add employee",
-                        "Add role",
-                        "Add department",
                         "View employees",
                         "View roles",
                         "View departments",
+                        "Add employee",
+                        "Add role",
+                        "Add department",
                         "Update roles",
                         "Exit"
                         ],
@@ -174,6 +175,40 @@ function viewDepartments(){
     })
 }
 
+function updateRoles(){
+    connection.query("SELECT * FROM roles", (err, data) => {
+        rolesArray = data.map((object) => object.title);
+        const rolesData = data;
+        connection.query("SELECT * FROM employees", (err, data) => {
+            employeeArray = data.map((object) => `${object.first_name} ${object.last_name}`);
+            inquirer.prompt([
+                {
+                    type: "list",
+                    message: "Which employee would you like to update?",
+                    choices: employeeArray,
+                    name: "employeeToChangeRole"
+                },
+                {
+                    type: "list",
+                    message: "Which role would you like to give this employee?",
+                    choices: rolesArray,
+                    name: "newRole"
+                },
+            ]).then(function(res){
+                const userUpdateObject = data.filter(object => `${object.first_name} ${object.last_name}` === res.employeeToChangeRole);
+                const newRole = rolesData.filter(object => object.title === res.newRole);
+                console.log(rolesData)
+                // console.log(res.newRole)
+                connection.query("UPDATE employees SET role_id = ? WHERE first_name=? AND last_name=?", [newRole[0].id, userUpdateObject[0].first_name, userUpdateObject[0].last_name], function(err, results) {
+                    if (err) throw err;
+                console.log(`Department added: ${res.newDepartment}`)
+                askFunction();
+                askFunction();
+            })
+        })
+    })
+})
+}
 
 function exit(){
     connection.end();
